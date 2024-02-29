@@ -12,7 +12,7 @@ type App struct {
 		Password string
 		Username string
 		DBName   string
-    Port string
+		Port     string
 	}
 
 	Server struct {
@@ -30,44 +30,44 @@ type App struct {
 var app *App
 
 func GetConfig() *App {
-  if app == nil {
-    app = initConfig()
-  }
+	if app == nil {
+		app = initConfig()
+	}
 
-  return app
+	return app
 }
 
 func initConfig() *App {
-  conf := App{}
-  err := godotenv.Load()
-  if err != nil {
-    conf.Server.Host = ""
-    conf.Server.Port = ""
-    conf.Server.Key = ""
-    
-    conf.Database.Hostname = ""
-    conf.Database.Username = ""
-    conf.Database.Password = ""
-    conf.Database.DBName = ""
-    conf.Database.Port = ""
+	conf := App{}
+	err := godotenv.Load()
+	if err != nil {
+		conf.Server.Host = ""
+		conf.Server.Port = ""
+		conf.Server.Key = ""
 
-    conf.Admin.Email = ""
-    conf.Admin.Password = ""
+		conf.Database.Hostname = ""
+		conf.Database.Username = ""
+		conf.Database.Password = ""
+		conf.Database.DBName = ""
+		conf.Database.Port = ""
 
-    return &conf
-  }
+		conf.Admin.Email = ""
+		conf.Admin.Password = ""
 
-  conf.Server.Host = os.Getenv("APP_HOST")
-  conf.Server.Port = os.Getenv("APP_PORT")
-  conf.Server.Key = os.Getenv("APP_KEY")
+		return &conf
+	}
 
-  conf.Database.Hostname = os.Getenv("DB_HOST")
-  conf.Database.Username = os.Getenv("DB_USER")
-  conf.Database.Password = os.Getenv("DB_PASS")
-  conf.Database.DBName = os.Getenv("DB_NAME")
-  conf.Database.Port = os.Getenv("DB_PORT")
+	conf.Server.Host = os.Getenv("APP_HOST")
+	conf.Server.Port = os.Getenv("APP_PORT")
+	conf.Server.Key = os.Getenv("APP_KEY")
 
-  conf.Admin.Email = os.Getenv("ADMIN_EMAIL")
-  conf.Admin.Password = os.Getenv("ADMIN_PASSWORD")
-  return &conf
+	conf.Database.Hostname = os.Getenv("DB_HOST")
+	conf.Database.Username = os.Getenv("DB_USER")
+	conf.Database.Password = os.Getenv("DB_PASS")
+	conf.Database.DBName = os.Getenv("DB_NAME")
+	conf.Database.Port = os.Getenv("DB_PORT")
+
+	conf.Admin.Email = os.Getenv("ADMIN_EMAIL")
+	conf.Admin.Password = os.Getenv("ADMIN_PASSWORD")
+	return &conf
 }
