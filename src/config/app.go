@@ -38,8 +38,8 @@ func GetConfig() *App {
 }
 
 func initConfig() *App {
-	conf := App{}
-	err := godotenv.Load()
+  conf := App{}
+  err := godotenv.Load()
   if err != nil {
     conf.Server.Host = ""
     conf.Server.Port = ""
