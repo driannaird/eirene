@@ -1,7 +1,7 @@
-package mail
+package repository
 
 import (
-	"github.com/rulanugrh/eirene/src/entity"
+	"github.com/rulanugrh/eirene/src/internal/entity"
 	"gorm.io/gorm"
 )
 
