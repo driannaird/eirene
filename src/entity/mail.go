@@ -3,7 +3,7 @@ package entity
 import "gorm.io/gorm"
 
 type Mail struct {
-	gorm.Model
+  gorm.Model
   Title string `json:"title" validate:"required"`
   Type string `json:"type"`
   UserEmail string `json:"user_email"`
