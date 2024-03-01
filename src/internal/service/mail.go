@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/rulanugrh/eirene/src/helper"
 	"github.com/rulanugrh/eirene/src/internal/entity"
+	"github.com/rulanugrh/eirene/src/internal/middleware"
 	"github.com/rulanugrh/eirene/src/internal/repository"
 )
 
@@ -16,12 +17,14 @@ type MailService interface {
 }
 
 type mailservice struct {
-	repo repository.MailRepository
+	repo     repository.MailRepository
+	validate middleware.IValidate
 }
 
-func NewMailService(repo repository.MailRepository) MailService {
+func NewMailService(repo repository.MailRepository, validate middleware.IValidate) MailService {
 	return &mailservice{
-		repo: repo,
+		repo:     repo,
+		validate: validate,
 	}
 }
 
@@ -53,6 +56,11 @@ func (m *mailservice) Inbox(user_email string) (*[]helper.MailList, error) {
 }
 
 func (m *mailservice) Sent(req entity.Mail) (*helper.MailCreate, error) {
+	err := m.validate.Validate(req)
+	if err != nil {
+		return nil, m.validate.ValidationMessage(err)
+	}
+
 	data, err := m.repo.Sent(req)
 	if err != nil {
 		return nil, helper.InternalServerError("cannot create email")

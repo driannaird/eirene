@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/rulanugrh/eirene/src/helper"
 	"github.com/rulanugrh/eirene/src/internal/entity"
+	"github.com/rulanugrh/eirene/src/internal/middleware"
 	"github.com/rulanugrh/eirene/src/internal/util"
 )
 
@@ -14,14 +15,20 @@ type ModuleService interface {
 }
 
 type moduleservice struct {
-	mod util.ModuleInstall
+	mod      util.ModuleInstall
+	validate middleware.IValidate
 }
 
-func NewModuleService(mod util.ModuleInstall) ModuleService {
-	return &moduleservice{mod: mod}
+func NewModuleService(mod util.ModuleInstall, validate middleware.IValidate) ModuleService {
+	return &moduleservice{mod: mod, validate: validate}
 }
 
 func (mod *moduleservice) Install(req entity.Module) (*helper.ResponseModule, error) {
+	err := mod.validate.Validate(req)
+	if err != nil {
+		return nil, mod.validate.ValidationMessage(err)
+	}
+
 	response, err := mod.mod.InstallDepedency(req)
 	if err != nil {
 		return nil, helper.BadRequest(err.Error())
@@ -31,7 +38,12 @@ func (mod *moduleservice) Install(req entity.Module) (*helper.ResponseModule, er
 }
 
 func (mod *moduleservice) Update(req entity.Module) error {
-	err := mod.mod.UpdatePackage(req)
+	err := mod.validate.Validate(req)
+	if err != nil {
+		return mod.validate.ValidationMessage(err)
+	}
+
+	err = mod.mod.UpdatePackage(req)
 	if err != nil {
 		return helper.BadRequest(err.Error())
 	}
@@ -40,6 +52,11 @@ func (mod *moduleservice) Update(req entity.Module) error {
 }
 
 func (mod *moduleservice) Delete(req entity.Module) (*helper.ResponseModule, error) {
+	err := mod.validate.Validate(req)
+	if err != nil {
+		return nil, mod.validate.ValidationMessage(err)
+	}
+
 	response, err := mod.mod.DeleteDepedency(req)
 	if err != nil {
 		return nil, helper.BadRequest(err.Error())
@@ -49,7 +66,12 @@ func (mod *moduleservice) Delete(req entity.Module) (*helper.ResponseModule, err
 }
 
 func (mod *moduleservice) AddSSHKey(req entity.SSHKey) error {
-	err := mod.mod.AddSSHKey(req)
+	err := mod.validate.Validate(req)
+	if err != nil {
+		return mod.validate.ValidationMessage(err)
+	}
+
+	err = mod.mod.AddSSHKey(req)
 	if err != nil {
 		return helper.BadRequest(err.Error())
 	}
