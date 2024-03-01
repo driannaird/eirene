@@ -11,6 +11,7 @@ import (
 
 type jwtclaims struct {
 	Username string `json:"username"`
+	Email    string `json:"email"`
 	jwt.RegisteredClaims
 }
 
@@ -19,6 +20,7 @@ func GenerateToken(user entity.UserLogin) (string, error) {
 	time := jwt.NewNumericDate(time.Now().Add(15 * time.Minute))
 	claims := &jwtclaims{
 		Username: user.Username,
+		Email:    user.Email,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: time,
 		},
@@ -31,4 +33,19 @@ func GenerateToken(user entity.UserLogin) (string, error) {
 	}
 
 	return tokenString, nil
+}
+
+func CheckToken(token string) (*jwtclaims, error) {
+	conf := config.GetConfig()
+	tokens, _ := jwt.ParseWithClaims(token, &jwtclaims{}, func(t *jwt.Token) (interface{}, error) {
+		return []byte(conf.Server.Key), helper.Forbidden("this is strict page")
+	})
+
+	claim, err := tokens.Claims.(*jwtclaims)
+	if !err {
+		return nil, helper.Unauthorize("sorry you not have token")
+	}
+
+	return claim, nil
+
 }
