@@ -56,7 +56,7 @@ func (repo *mailrepo) Starred(user_email string) ([]entity.Mail, error) {
 
 func (repo *mailrepo) Archived(user_email string) ([]entity.Mail, error) {
 	var listEmail []entity.Mail
-	err := repo.db.Where("type = ?", "archice").Where("user_email = ?", user_email).Find(&listEmail).Error
+	err := repo.db.Where("type = ?", "archive").Where("user_email = ?", user_email).Find(&listEmail).Error
 
 	if err != nil {
 		return nil, err

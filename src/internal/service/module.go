@@ -10,6 +10,7 @@ type ModuleService interface {
 	Install(req entity.Module) (*helper.ResponseModule, error)
 	Update(req entity.Module) error
 	Delete(req entity.Module) (*helper.ResponseModule, error)
+	AddSSHKey(req entity.SSHKey) error
 }
 
 type moduleservice struct {
@@ -45,4 +46,13 @@ func (mod *moduleservice) Delete(req entity.Module) (*helper.ResponseModule, err
 	}
 
 	return response, nil
+}
+
+func (mod *moduleservice) AddSSHKey(req entity.SSHKey) error {
+	err := mod.mod.AddSSHKey(req)
+	if err != nil {
+		return helper.BadRequest(err.Error())
+	}
+
+	return nil
 }

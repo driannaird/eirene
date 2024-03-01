@@ -3,6 +3,7 @@ package util
 import (
 	"io/ioutil"
 	"log"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -14,6 +15,7 @@ type ModuleInstall interface {
 	InstallDepedency(req entity.Module) (*helper.ResponseModule, error)
 	DeleteDepedency(req entity.Module) (*helper.ResponseModule, error)
 	UpdatePackage(req entity.Module) error
+	AddSSHKey(req entity.SSHKey) error
 }
 
 type mod struct {
@@ -72,6 +74,22 @@ func (m *mod) UpdatePackage(req entity.Module) error {
 	default:
 		return helper.BadRequest("Sorry your os not support")
 	}
+}
+
+func (m *mod) AddSSHKey(req entity.SSHKey) error {
+	f, err := os.Open("~/.ssh/authorized_keys")
+	if err != nil {
+		return helper.BadRequest("sorry your file is not found")
+	}
+
+	defer f.Close()
+
+	_, err = f.WriteString(req.Key)
+	if err != nil {
+		return helper.InternalServerError("sorry cannot insert ssh-keygen")
+	}
+
+	return nil
 }
 
 func install_package(req entity.Module, command string) *helper.ResponseModule {
