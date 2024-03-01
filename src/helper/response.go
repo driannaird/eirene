@@ -35,6 +35,12 @@ type UserRegister struct {
 	Email    string `json:"email"`
 }
 
+type User struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Avatar   string `json:"avatar"`
+}
+
 type UserLogin struct {
 	Token string `json:"token"`
 }

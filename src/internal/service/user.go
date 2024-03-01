@@ -11,6 +11,7 @@ import (
 type UserService interface {
 	Register(req entity.UserRegister) (*helper.UserRegister, error)
 	Login(req entity.UserLogin) (*helper.UserLogin, error)
+	Update(username string, model entity.User) (*helper.User, error)
 }
 
 type userservice struct {
@@ -74,4 +75,17 @@ func (u *userservice) Login(req entity.UserLogin) (*helper.UserLogin, error) {
 	}
 
 	return &response, nil
+}
+
+func (u *userservice) Update(username string, model entity.User) (*helper.User, error) {
+	data, err := u.repo.Update(username, model)
+	if err != nil {
+		return nil, helper.BadRequest(err.Error())
+	}
+
+	return &helper.User{
+		Username: data.Username,
+		Avatar:   data.Avatar,
+		Email:    data.Email,
+	}, nil
 }
