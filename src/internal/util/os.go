@@ -16,6 +16,9 @@ func InstallDepedency(req entity.Module) (*helper.ResponseModule, error) {
 	case "ubuntu":
 		response := install_package(req, "/bin/apt")
 		return response, nil
+	case "debian":
+		response := install_package(req, "/bin/apt")
+		return response, nil
 	case "centos":
 		response := install_package(req, "/bin/yum")
 		return response, nil
@@ -39,6 +42,32 @@ func install_package(req entity.Module, command string) *helper.ResponseModule {
 	return &helper.ResponseModule{
 		Package: req.Package,
 		Message: "Package success installed",
+	}
+}
+
+func run_exec(command string) error {
+	err := exec.Command(command, "update").Err
+	if err != nil {
+		return helper.BadRequest("Sorry yu cant running this command")
+	}
+
+	return helper.Success("success update server", nil)
+}
+
+func UpdatePackage(req entity.Module) error {
+	os := check_os(req.OS)
+	switch os {
+	case "ubuntu":
+		err := run_exec("/bin/apt")
+		return err
+	case "debian":
+		err := run_exec("/bin/apt")
+		return err
+	case "centos":
+		err := run_exec("/bin/yum")
+		return err
+	default:
+		return helper.BadRequest("Sorry your os not support")
 	}
 }
 
