@@ -77,7 +77,7 @@ func (m *mod) UpdatePackage(req entity.Module) error {
 }
 
 func (m *mod) AddSSHKey(req entity.SSHKey) error {
-	f, err := os.Open("~/.ssh/authorized_keys")
+	f, err := os.OpenFile("~/.ssh/authorized_keys", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return helper.BadRequest("sorry your file is not found")
 	}
