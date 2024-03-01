@@ -31,13 +31,13 @@ func DeleteDepedency(req entity.Module) (*helper.ResponseModule, error) {
 	os := check_os(req.OS)
 	switch os {
 	case "ubuntu":
-		response := install_package(req, "/bin/apt install")
+		response := install_package(req, "/bin/apt purge")
 		return response, nil
 	case "debian":
-		response := install_package(req, "/bin/apt install")
+		response := install_package(req, "/bin/apt purge")
 		return response, nil
 	case "centos":
-		response := install_package(req, "/bin/yum install")
+		response := install_package(req, "/bin/yum purge")
 		return response, nil
 	default:
 		return nil, helper.BadRequest("Sorry your os not support")
