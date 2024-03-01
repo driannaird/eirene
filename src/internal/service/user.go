@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/rulanugrh/eirene/src/helper"
 	"github.com/rulanugrh/eirene/src/internal/entity"
+	"github.com/rulanugrh/eirene/src/internal/middleware"
 	"github.com/rulanugrh/eirene/src/internal/repository"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -57,8 +58,19 @@ func (u *userservice) Login(req entity.UserLogin) (*helper.UserLogin, error) {
 		return nil, helper.Unauthorize("cannot compare password")
 	}
 
+	claimToken := entity.UserLogin{
+		Email:    req.Email,
+		Password: req.Password,
+		Username: data.Username,
+	}
+
+	token, err := middleware.GenerateToken(claimToken)
+	if err != nil {
+		return nil, helper.BadRequest(err.Error())
+	}
+
 	response := helper.UserLogin{
-		Token: data.Avatar,
+		Token: token,
 	}
 
 	return &response, nil
