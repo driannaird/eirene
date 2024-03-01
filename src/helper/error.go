@@ -25,6 +25,13 @@ func InternalServerError(msg string) error {
 	}
 }
 
+func BadRequest(msg string) error {
+	return &Response{
+		Code:    400,
+		Message: msg,
+	}
+}
+
 func NotFound(msg string) error {
 	return &Response{
 		Code:    404,

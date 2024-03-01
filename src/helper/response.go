@@ -29,3 +29,12 @@ type MailUpdate struct {
 	Message string `json:"msg"`
 	Type    string `json:"type"`
 }
+
+type UserRegister struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+}
+
+type UserLogin struct {
+	Token string `json:"token"`
+}
