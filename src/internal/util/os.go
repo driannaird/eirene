@@ -10,7 +10,20 @@ import (
 	"github.com/rulanugrh/eirene/src/internal/entity"
 )
 
-func InstallDepedency(req entity.Module) (*helper.ResponseModule, error) {
+type ModuleInstall interface {
+	InstallDepedency(req entity.Module) (*helper.ResponseModule, error)
+	DeleteDepedency(req entity.Module) (*helper.ResponseModule, error)
+	UpdatePackage(req entity.Module) error
+}
+
+type mod struct {
+}
+
+func NewModuleInstall() ModuleInstall {
+	return &mod{}
+}
+
+func (m *mod) InstallDepedency(req entity.Module) (*helper.ResponseModule, error) {
 	os := check_os(req.OS)
 	switch os {
 	case "ubuntu":
@@ -27,7 +40,7 @@ func InstallDepedency(req entity.Module) (*helper.ResponseModule, error) {
 	}
 }
 
-func DeleteDepedency(req entity.Module) (*helper.ResponseModule, error) {
+func (m *mod) DeleteDepedency(req entity.Module) (*helper.ResponseModule, error) {
 	os := check_os(req.OS)
 	switch os {
 	case "ubuntu":
@@ -44,7 +57,7 @@ func DeleteDepedency(req entity.Module) (*helper.ResponseModule, error) {
 	}
 }
 
-func UpdatePackage(req entity.Module) error {
+func (m *mod) UpdatePackage(req entity.Module) error {
 	os := check_os(req.OS)
 	switch os {
 	case "ubuntu":

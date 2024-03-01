@@ -13,14 +13,15 @@ type ModuleService interface {
 }
 
 type moduleservice struct {
+	mod util.ModuleInstall
 }
 
-func NewModuleService() ModuleService {
-	return &moduleservice{}
+func NewModuleService(mod util.ModuleInstall) ModuleService {
+	return &moduleservice{mod: mod}
 }
 
 func (mod *moduleservice) Install(req entity.Module) (*helper.ResponseModule, error) {
-	response, err := util.InstallDepedency(req)
+	response, err := mod.mod.InstallDepedency(req)
 	if err != nil {
 		return nil, helper.BadRequest(err.Error())
 	}
@@ -29,7 +30,7 @@ func (mod *moduleservice) Install(req entity.Module) (*helper.ResponseModule, er
 }
 
 func (mod *moduleservice) Update(req entity.Module) error {
-	err := util.UpdatePackage(req)
+	err := mod.mod.UpdatePackage(req)
 	if err != nil {
 		return helper.BadRequest(err.Error())
 	}
@@ -38,7 +39,7 @@ func (mod *moduleservice) Update(req entity.Module) error {
 }
 
 func (mod *moduleservice) Delete(req entity.Module) (*helper.ResponseModule, error) {
-	response, err := util.DeleteDepedency(req)
+	response, err := mod.mod.DeleteDepedency(req)
 	if err != nil {
 		return nil, helper.BadRequest(err.Error())
 	}
