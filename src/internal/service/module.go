@@ -9,6 +9,7 @@ import (
 type ModuleService interface {
 	Install(req entity.Module) (*helper.ResponseModule, error)
 	Update(req entity.Module) error
+	Delete(req entity.Module) (*helper.ResponseModule, error)
 }
 
 type moduleservice struct {
@@ -34,4 +35,13 @@ func (mod *moduleservice) Update(req entity.Module) error {
 	}
 
 	return helper.Success("success update package", nil)
+}
+
+func (mod *moduleservice) Delete(req entity.Module) (*helper.ResponseModule, error) {
+	response, err := util.DeleteDepedency(req)
+	if err != nil {
+		return nil, helper.BadRequest(err.Error())
+	}
+
+	return response, nil
 }

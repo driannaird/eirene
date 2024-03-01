@@ -14,44 +14,34 @@ func InstallDepedency(req entity.Module) (*helper.ResponseModule, error) {
 	os := check_os(req.OS)
 	switch os {
 	case "ubuntu":
-		response := install_package(req, "/bin/apt")
+		response := install_package(req, "/bin/apt install")
 		return response, nil
 	case "debian":
-		response := install_package(req, "/bin/apt")
+		response := install_package(req, "/bin/apt install")
 		return response, nil
 	case "centos":
-		response := install_package(req, "/bin/yum")
+		response := install_package(req, "/bin/yum install")
 		return response, nil
 	default:
 		return nil, helper.BadRequest("Sorry your os not support")
 	}
 }
 
-func install_package(req entity.Module, command string) *helper.ResponseModule {
-	for _, pkg := range req.Package {
-		err := exec.Command(command, pkg).Err
-		if err != nil {
-			log.Printf("Something error when install package :%s", err.Error())
-			return &helper.ResponseModule{
-				Package: nil,
-				Message: "sorry package not installed",
-			}
-		}
+func DeleteDepedency(req entity.Module) (*helper.ResponseModule, error) {
+	os := check_os(req.OS)
+	switch os {
+	case "ubuntu":
+		response := install_package(req, "/bin/apt install")
+		return response, nil
+	case "debian":
+		response := install_package(req, "/bin/apt install")
+		return response, nil
+	case "centos":
+		response := install_package(req, "/bin/yum install")
+		return response, nil
+	default:
+		return nil, helper.BadRequest("Sorry your os not support")
 	}
-
-	return &helper.ResponseModule{
-		Package: req.Package,
-		Message: "Package success installed",
-	}
-}
-
-func run_exec(command string) error {
-	err := exec.Command(command, "update").Err
-	if err != nil {
-		return helper.BadRequest("Sorry yu cant running this command")
-	}
-
-	return helper.Success("success update server", nil)
 }
 
 func UpdatePackage(req entity.Module) error {
@@ -69,6 +59,31 @@ func UpdatePackage(req entity.Module) error {
 	default:
 		return helper.BadRequest("Sorry your os not support")
 	}
+}
+
+func install_package(req entity.Module, command string) *helper.ResponseModule {
+	err := exec.Command(command, req.Package...).Err
+	if err != nil {
+		log.Printf("Something error when install package :%s", err.Error())
+		return &helper.ResponseModule{
+			Package: nil,
+			Message: "sorry package not installed",
+		}
+	}
+
+	return &helper.ResponseModule{
+		Package: req.Package,
+		Message: "Package success installed",
+	}
+}
+
+func run_exec(command string) error {
+	err := exec.Command(command, "update").Err
+	if err != nil {
+		return helper.BadRequest("Sorry yu cant running this command")
+	}
+
+	return helper.Success("success update server", nil)
 }
 
 func check_os(os string) string {
