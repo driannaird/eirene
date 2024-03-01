@@ -4,6 +4,7 @@ import (
 	"github.com/rulanugrh/eirene/src/helper"
 	"github.com/rulanugrh/eirene/src/internal/entity"
 	"github.com/rulanugrh/eirene/src/internal/repository"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService interface {
@@ -22,7 +23,18 @@ func NewUserService(repo repository.UserRepository) UserService {
 }
 
 func (u *userservice) Register(req entity.UserRegister) (*helper.UserRegister, error) {
-	data, err := u.repo.Register(req)
+	password, err := bcrypt.GenerateFromPassword([]byte(req.Password), 14)
+	if err != nil {
+		return nil, helper.BadRequest("Cannot generate password")
+	}
+
+	modelReq := entity.UserRegister{
+		Username: req.Username,
+		Email:    req.Email,
+		Password: string(password),
+	}
+
+	data, err := u.repo.Register(modelReq)
 	if err != nil {
 		return nil, helper.InternalServerError("sorry cannt create user")
 	}
@@ -38,6 +50,11 @@ func (u *userservice) Login(req entity.UserLogin) (*helper.UserLogin, error) {
 	data, err := u.repo.Login(req)
 	if err != nil {
 		return nil, err
+	}
+
+	compare := bcrypt.CompareHashAndPassword([]byte(data.Password), []byte(req.Password))
+	if compare != nil {
+		return nil, helper.Unauthorize("cannot compare password")
 	}
 
 	response := helper.UserLogin{
