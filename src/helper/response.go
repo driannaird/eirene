@@ -44,3 +44,8 @@ type User struct {
 type UserLogin struct {
 	Token string `json:"token"`
 }
+
+type ResponseModule struct {
+	Package interface{} `json:"package"`
+	Message string      `json:"message"`
+}
