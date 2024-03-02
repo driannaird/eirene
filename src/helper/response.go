@@ -51,6 +51,11 @@ type ResponseModule struct {
 }
 
 type Image struct {
-	File string
-	Link string
+	File string `json:"file"`
+	Link string `json:"link"`
+}
+
+type File struct {
+	File string `json:"file"`
+	Link string `json:"link"`
 }
