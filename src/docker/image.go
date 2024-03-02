@@ -16,6 +16,7 @@ type DockerImage interface {
 	Create(req Image) error
 	ListImage() (*[]helper.DockerImage, error)
 	InspectImage(id string) (*helper.InspectDockerImage, error)
+	DeleteImage(id string) error
 }
 
 type imageclient struct {
@@ -88,4 +89,13 @@ func (img *imageclient) InspectImage(id string) (*helper.InspectDockerImage, err
 	}
 
 	return &response, nil
+}
+
+func (img *imageclient) DeleteImage(id string) error {
+	err := img.client.RemoveImage(id)
+	if err != nil {
+		return helper.BadRequest(err.Error())
+	}
+
+	return nil
 }
