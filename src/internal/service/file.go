@@ -19,7 +19,7 @@ func NewFileService() FileService {
 }
 
 func (f *fileservice) GetAll(username string) (*[]helper.File, error) {
-	path := fmt.Sprintf("/data/file/%s", username)
+	path := fmt.Sprintf("./data/file/%s", username)
 	file, err := os.ReadDir(path)
 	if err != nil {
 		return nil, helper.InternalServerError(err.Error())
@@ -39,7 +39,7 @@ func (f *fileservice) GetAll(username string) (*[]helper.File, error) {
 }
 
 func (f *fileservice) Delete(username string, name string) error {
-	path := fmt.Sprintf("/data/file/%s/%s", username, name)
+	path := fmt.Sprintf("./data/file/%s/%s", username, name)
 	err := os.Remove(path)
 	if err != nil {
 		return helper.InternalServerError(err.Error())

@@ -38,7 +38,7 @@ func (f *fileendpoint) Save(ctx *fiber.Ctx) error {
 		return ctx.Status(400).JSON(helper.BadRequest(err.Error()))
 	}
 
-	path := fmt.Sprintf("/data/file/%s/%s", token.Username, file.Filename)
+	path := fmt.Sprintf("./data/file/%s/%s", token.Username, file.Filename)
 	if err = ctx.SaveFile(file, path); err != nil {
 		return ctx.Status(500).JSON(helper.InternalServerError(err.Error()))
 	}
@@ -75,7 +75,7 @@ func (f *fileendpoint) GetOne(ctx *fiber.Ctx) error {
 		return ctx.Status(401).JSON(helper.Unauthorize(err.Error()))
 	}
 
-	path := fmt.Sprintf("/data/file/%s/%s", token.Username, file)
+	path := fmt.Sprintf("./data/file/%s/%s", token.Username, file)
 	return ctx.Status(200).SendFile(path)
 }
 

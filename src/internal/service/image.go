@@ -19,7 +19,7 @@ func NewImageService() ImageService {
 }
 
 func (img *imageservivce) GetImage(username string) (*[]helper.Image, error) {
-	path := fmt.Sprintf("/data/image/%s", username)
+	path := fmt.Sprintf("./data/image/%s", username)
 	files, err := os.ReadDir(path)
 	if err != nil {
 		return nil, helper.InternalServerError(err.Error())
@@ -29,7 +29,7 @@ func (img *imageservivce) GetImage(username string) (*[]helper.Image, error) {
 	for _, f := range files {
 		image := helper.Image{
 			File: f.Name(),
-			Link: fmt.Sprintf("/data/image/%s/%s", username, f.Name()),
+			Link: fmt.Sprintf("./data/image/%s/%s", username, f.Name()),
 		}
 
 		response = append(response, image)
