@@ -124,3 +124,20 @@ type Container struct {
 	HostsPath    string    `json:"host_path"`
 	Config       *Config   `json:"config"`
 }
+
+type Port struct {
+	PrivatePort int64  `json:"private_port"`
+	PublicPort  int64  `json:"public_port"`
+	Type        string `json:"type"`
+	IP          string `json:"ip"`
+}
+
+type ListContainer struct {
+	ID      string `json:"id"`
+	Image   string `json:"image"`
+	Command string `json:"command"`
+	Status  string `json:"status"`
+	State   string `json:"state"`
+	Created int64  `json:"created"`
+	Ports   []Port `json:"ports"`
+}

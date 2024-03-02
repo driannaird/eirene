@@ -3,6 +3,7 @@ package docker
 import (
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/rulanugrh/eirene/src/helper"
+	"github.com/rulanugrh/eirene/src/internal/util"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -32,6 +33,7 @@ type Container struct {
 
 type DockerContainer interface {
 	Create(req Container) (*helper.Container, error)
+	ListContainer() (*[]helper.ListContainer, error)
 }
 
 type container struct {
@@ -44,6 +46,13 @@ func NewDockerContainer(client *docker.Client) DockerContainer {
 }
 
 func (c *container) Create(req Container) (*helper.Container, error) {
+	span, err := util.Tracer(c.trace, "createContainer")
+	if err != nil {
+		return nil, helper.BadRequest(err.Error())
+	}
+
+	defer span.End()
+
 	data, err := c.client.CreateContainer(docker.CreateContainerOptions{
 		Name: req.Name,
 		HostConfig: &docker.HostConfig{
@@ -84,6 +93,49 @@ func (c *container) Create(req Container) (*helper.Container, error) {
 			Env:        data.Config.Env,
 			Port:       data.Config.ExposedPorts,
 		},
+	}
+
+	return &response, nil
+}
+
+func (c *container) ListContainer() (*[]helper.ListContainer, error) {
+	span, err := util.Tracer(c.trace, "listContainer")
+	if err != nil {
+		return nil, helper.InternalServerError(err.Error())
+	}
+
+	defer span.End()
+
+	data, err := c.client.ListContainers(docker.ListContainersOptions{All: true})
+	if err != nil {
+		return nil, helper.InternalServerError(err.Error())
+	}
+
+	var response []helper.ListContainer
+	for _, ct := range data {
+		var listPort []helper.Port
+		for _, ports := range ct.Ports {
+			port := helper.Port{
+				PrivatePort: ports.PrivatePort,
+				PublicPort:  ports.PublicPort,
+				IP:          ports.IP,
+				Type:        ports.Type,
+			}
+
+			listPort = append(listPort, port)
+		}
+
+		res := helper.ListContainer{
+			ID:      ct.ID,
+			Command: ct.Command,
+			Created: ct.Created,
+			Ports:   listPort,
+			Image:   ct.Image,
+			Status:  ct.Status,
+			State:   ct.State,
+		}
+
+		response = append(response, res)
 	}
 
 	return &response, nil
