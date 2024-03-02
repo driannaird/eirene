@@ -4,6 +4,9 @@ import (
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/rulanugrh/eirene/src/config"
 	"github.com/rulanugrh/eirene/src/helper"
+	"github.com/rulanugrh/eirene/src/internal/util"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type Image struct {
@@ -22,14 +25,22 @@ type DockerImage interface {
 type imageclient struct {
 	client *docker.Client
 	config *config.App
+	trace  trace.Tracer
 }
 
 func NewDockerImage(client *docker.Client) DockerImage {
-	return &imageclient{client: client, config: config.GetConfig()}
+	return &imageclient{client: client, config: config.GetConfig(), trace: otel.Tracer("docke-image")}
 }
 
 func (img *imageclient) Create(req Image) error {
-	err := img.client.PullImage(docker.PullImageOptions{
+	span, err := util.Tracer(img.trace, "create-image")
+	if err != nil {
+		return helper.BadRequest(err.Error())
+	}
+
+	defer span.End()
+
+	err = img.client.PullImage(docker.PullImageOptions{
 		Repository: req.Repository,
 		Platform:   req.Platform,
 		Tag:        req.Tag,
@@ -47,6 +58,13 @@ func (img *imageclient) Create(req Image) error {
 }
 
 func (img *imageclient) ListImage() (*[]helper.DockerImage, error) {
+	span, err := util.Tracer(img.trace, "list-image")
+	if err != nil {
+		return nil, helper.BadRequest(err.Error())
+	}
+
+	defer span.End()
+
 	data, err := img.client.ListImages(docker.ListImagesOptions{All: true})
 	if err != nil {
 		return nil, helper.InternalServerError(err.Error())
@@ -70,6 +88,13 @@ func (img *imageclient) ListImage() (*[]helper.DockerImage, error) {
 }
 
 func (img *imageclient) InspectImage(id string) (*helper.InspectDockerImage, error) {
+	span, err := util.TracerWithAttribute(img.trace, "create-image", id)
+	if err != nil {
+		return nil, helper.BadRequest(err.Error())
+	}
+
+	defer span.End()
+
 	data, err := img.client.InspectImage(id)
 	if err != nil {
 		return nil, helper.InternalServerError(err.Error())
@@ -92,7 +117,14 @@ func (img *imageclient) InspectImage(id string) (*helper.InspectDockerImage, err
 }
 
 func (img *imageclient) DeleteImage(id string) error {
-	err := img.client.RemoveImage(id)
+	span, err := util.TracerWithAttribute(img.trace, "delete-image", id)
+	if err != nil {
+		return helper.BadRequest(err.Error())
+	}
+
+	defer span.End()
+
+	err = img.client.RemoveImage(id)
 	if err != nil {
 		return helper.BadRequest(err.Error())
 	}
