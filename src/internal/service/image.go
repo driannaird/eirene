@@ -1,11 +1,12 @@
 package service
 
 import (
-	"context"
 	"fmt"
 	"os"
 
 	"github.com/rulanugrh/eirene/src/helper"
+	"github.com/rulanugrh/eirene/src/internal/util"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -18,14 +19,18 @@ type imageservivce struct {
 	trace trace.Tracer
 }
 
-func NewImageService(trace trace.Tracer) ImageService {
+func NewImageService() ImageService {
 	return &imageservivce{
-		trace: trace,
+		trace: otel.Tracer("image-service"),
 	}
 }
 
 func (img *imageservivce) GetImage(username string) (*[]helper.Image, error) {
-	_, span := img.trace.Start(context.Background(), "getAllImage")
+	span, err := util.Tracer(img.trace, "getAllImage")
+	if err != nil {
+		return nil, err
+	}
+
 	defer span.End()
 
 	path := fmt.Sprintf("./data/image/%s", username)
@@ -48,11 +53,15 @@ func (img *imageservivce) GetImage(username string) (*[]helper.Image, error) {
 }
 
 func (img *imageservivce) DeleteImage(username string, image string) error {
-	_, span := img.trace.Start(context.Background(), "delete-image")
+	span, err := util.Tracer(img.trace, "deleteImage")
+	if err != nil {
+		return err
+	}
+
 	defer span.End()
 
 	path := fmt.Sprintf("/data/image/%s/%s", username, image)
-	err := os.Remove(path)
+	err = os.Remove(path)
 	if err != nil {
 		return helper.InternalServerError(err.Error())
 	}

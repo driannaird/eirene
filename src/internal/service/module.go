@@ -1,12 +1,11 @@
 package service
 
 import (
-	"context"
-
 	"github.com/rulanugrh/eirene/src/helper"
 	"github.com/rulanugrh/eirene/src/internal/entity"
 	"github.com/rulanugrh/eirene/src/internal/middleware"
 	"github.com/rulanugrh/eirene/src/internal/util"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -23,15 +22,19 @@ type moduleservice struct {
 	trace    trace.Tracer
 }
 
-func NewModuleService(mod util.ModuleInstall, validate middleware.IValidate, trace trace.Tracer) ModuleService {
-	return &moduleservice{mod: mod, validate: validate, trace: trace}
+func NewModuleService(mod util.ModuleInstall, validate middleware.IValidate) ModuleService {
+	return &moduleservice{mod: mod, validate: validate, trace: otel.Tracer("module-service")}
 }
 
 func (mod *moduleservice) Install(req entity.Module) (*helper.ResponseModule, error) {
-	_, span := mod.trace.Start(context.Background(), "install-package")
+	span, err := util.Tracer(mod.trace, "installPackage")
+	if err != nil {
+		return nil, err
+	}
+
 	defer span.End()
 
-	err := mod.validate.Validate(req)
+	err = mod.validate.Validate(req)
 	if err != nil {
 		return nil, mod.validate.ValidationMessage(err)
 	}
@@ -45,10 +48,14 @@ func (mod *moduleservice) Install(req entity.Module) (*helper.ResponseModule, er
 }
 
 func (mod *moduleservice) Update(req entity.Module) error {
-	_, span := mod.trace.Start(context.Background(), "update-package")
+	span, err := util.Tracer(mod.trace, "updatePackage")
+	if err != nil {
+		return err
+	}
+
 	defer span.End()
 
-	err := mod.validate.Validate(req)
+	err = mod.validate.Validate(req)
 	if err != nil {
 		return mod.validate.ValidationMessage(err)
 	}
@@ -62,10 +69,14 @@ func (mod *moduleservice) Update(req entity.Module) error {
 }
 
 func (mod *moduleservice) Delete(req entity.Module) (*helper.ResponseModule, error) {
-	_, span := mod.trace.Start(context.Background(), "delete-package")
+	span, err := util.Tracer(mod.trace, "deletePackage")
+	if err != nil {
+		return nil, err
+	}
+
 	defer span.End()
 
-	err := mod.validate.Validate(req)
+	err = mod.validate.Validate(req)
 	if err != nil {
 		return nil, mod.validate.ValidationMessage(err)
 	}
@@ -79,10 +90,14 @@ func (mod *moduleservice) Delete(req entity.Module) (*helper.ResponseModule, err
 }
 
 func (mod *moduleservice) AddSSHKey(req entity.SSHKey) error {
-	_, span := mod.trace.Start(context.Background(), "addSSHKey")
+	span, err := util.Tracer(mod.trace, "addSSHKey")
+	if err != nil {
+		return err
+	}
+
 	defer span.End()
 
-	err := mod.validate.Validate(req)
+	err = mod.validate.Validate(req)
 	if err != nil {
 		return mod.validate.ValidationMessage(err)
 	}
