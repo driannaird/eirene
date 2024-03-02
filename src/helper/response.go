@@ -1,5 +1,13 @@
 package helper
 
+import (
+	"go.opentelemetry.io/otel/sdk/instrumentation"
+	"go.opentelemetry.io/otel/sdk/resource"
+	"go.opentelemetry.io/otel/sdk/trace"
+	tr "go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace/embedded"
+)
+
 type MailList struct {
 	ID         uint       `json:"id"`
 	Title      string     `json:"title"`
@@ -58,4 +66,15 @@ type Image struct {
 type File struct {
 	File string `json:"file"`
 	Link string `json:"link"`
+}
+
+type Metric struct {
+	embedded.TracerProvider `json:"embeded"`
+
+	NamedTracer map[instrumentation.Scope]*tr.Tracer
+
+	Sampler     trace.Sampler
+	IDGenerator trace.IDGenerator
+	SpanLimits  trace.SpanLimits
+	Resources   *resource.Resource
 }
