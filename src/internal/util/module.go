@@ -1,7 +1,6 @@
 package util
 
 import (
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -117,15 +116,15 @@ func run_exec(command string) error {
 	return helper.Success("success update server", nil)
 }
 
-func check_os(os string) string {
-	os_release, err := ioutil.ReadFile("/etc/os-release")
+func check_os(_os string) string {
+	os_release, err := os.ReadFile("/etc/os-release")
 	if err != nil {
 		log.Printf("cannot read file because :%s", err.Error())
 	}
 
-	contain_os := strings.Contains(string(os_release), os)
+	contain_os := strings.Contains(string(os_release), _os)
 	if contain_os {
-		return os
+		return _os
 	}
 
 	return "Sorry your os not support"
