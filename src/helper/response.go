@@ -3,6 +3,7 @@ package helper
 import (
 	"time"
 
+	docker "github.com/fsouza/go-dockerclient"
 	"go.opentelemetry.io/otel/sdk/instrumentation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
@@ -101,4 +102,25 @@ type InspectDockerImage struct {
 	VirtualSize   int64     `json:"virtual_size"`
 	Author        string    `json:"author"`
 	DockerVersion string    `json:"docker_version"`
+}
+
+type Config struct {
+	Hostname   string                   `json:"hostname,omitempty"`
+	Domainname string                   `json:"domain_name,omitempty"`
+	Image      string                   `json:"image,omitempty"`
+	Tty        bool                     `json:"tty"`
+	OpenStdin  bool                     `json:"bool"`
+	Env        []string                 `json:"env"`
+	Port       map[docker.Port]struct{} `json:"port"`
+}
+
+type Container struct {
+	ID           string    `json:"id"`
+	Name         string    `json:"name"`
+	Image        string    `json:"image"`
+	Created      time.Time `json:"created"`
+	Path         string    `json:"path"`
+	HostnamePath string    `json:"hostname_path"`
+	HostsPath    string    `json:"host_path"`
+	Config       *Config   `json:"config"`
 }
