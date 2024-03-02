@@ -1,6 +1,8 @@
 package helper
 
 import (
+	"time"
+
 	"go.opentelemetry.io/otel/sdk/instrumentation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
@@ -77,4 +79,26 @@ type Metric struct {
 	IDGenerator trace.IDGenerator
 	SpanLimits  trace.SpanLimits
 	Resources   *resource.Resource
+}
+
+type DockerImage struct {
+	ID          string   `json:"id"`
+	Tag         []string `json:"tag"`
+	Created     int64    `json:"created"`
+	Size        int64    `json:"size"`
+	VirtualSize int64    `json:"virtual_size"`
+	Labels      map[string]string
+}
+
+type InspectDockerImage struct {
+	ID            string    `json:"id"`
+	Tag           []string  `json:"tag"`
+	Created       time.Time `json:"created"`
+	Container     string    `json:"container"`
+	OS            string    `json:"os"`
+	Architecture  string    `json:"architecture"`
+	Size          int64     `json:"size"`
+	VirtualSize   int64     `json:"virtual_size"`
+	Author        string    `json:"author"`
+	DockerVersion string    `json:"docker_version"`
 }

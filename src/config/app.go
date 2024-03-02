@@ -25,6 +25,12 @@ type App struct {
 		Email    string
 		Password string
 	}
+
+	Docker struct {
+		Email    string
+		Password string
+		Username string
+	}
 }
 
 var app *App
