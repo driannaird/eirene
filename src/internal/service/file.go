@@ -1,10 +1,12 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	"github.com/rulanugrh/eirene/src/helper"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type FileService interface {
@@ -12,13 +14,18 @@ type FileService interface {
 	Delete(username string, name string) error
 }
 
-type fileservice struct{}
+type fileservice struct {
+	trace trace.Tracer
+}
 
-func NewFileService() FileService {
-	return &fileservice{}
+func NewFileService(trace trace.Tracer) FileService {
+	return &fileservice{trace: trace}
 }
 
 func (f *fileservice) GetAll(username string) (*[]helper.File, error) {
+	_, span := f.trace.Start(context.Background(), "getAllFile")
+	defer span.End()
+
 	path := fmt.Sprintf("./data/file/%s", username)
 	file, err := os.ReadDir(path)
 	if err != nil {
@@ -39,6 +46,9 @@ func (f *fileservice) GetAll(username string) (*[]helper.File, error) {
 }
 
 func (f *fileservice) Delete(username string, name string) error {
+	_, span := f.trace.Start(context.Background(), "deleteFile")
+	defer span.End()
+
 	path := fmt.Sprintf("./data/file/%s/%s", username, name)
 	err := os.Remove(path)
 	if err != nil {
