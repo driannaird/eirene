@@ -49,3 +49,8 @@ type ResponseModule struct {
 	Package interface{} `json:"package"`
 	Message string      `json:"message"`
 }
+
+type Image struct {
+	File string
+	Link string
+}
