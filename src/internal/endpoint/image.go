@@ -36,7 +36,7 @@ func (img *imgendpoint) Save(ctx *fiber.Ctx) error {
 		return ctx.Status(400).JSON(helper.BadRequest(err.Error()))
 	}
 
-	path := fmt.Sprintf("./data/image/%s/%s", token.Username, file.Filename)
+	path := fmt.Sprintf("/data/image/%s/%s", token.Username, file.Filename)
 	if err = ctx.SaveFile(file, path); err != nil {
 		return ctx.Status(500).JSON(helper.InternalServerError(err.Error()))
 	}
@@ -73,7 +73,7 @@ func (img *imgendpoint) GetOne(ctx *fiber.Ctx) error {
 		return ctx.Status(401).JSON(helper.Unauthorize(err.Error()))
 	}
 
-	path := fmt.Sprintf("./data/image/%s/%s", token.Username, image)
+	path := fmt.Sprintf("/data/image/%s/%s", token.Username, image)
 	return ctx.Status(200).SendFile(path)
 }
 
