@@ -1,0 +1,14 @@
+name: build-main-file
+on: [push, pull_request]
+
+jobs:
+  build-main-file:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - run: echo "Running build File"
+    - uses: actions/setup-go@v5
+
+      with:
+        go-version: '1.21.6'
+    - run: go build -o src/bin/main -v src/main.go
