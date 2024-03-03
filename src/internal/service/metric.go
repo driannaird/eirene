@@ -1,6 +1,9 @@
 package service
 
 import (
+	"context"
+	"log"
+
 	"github.com/jinzhu/copier"
 	"github.com/rulanugrh/eirene/src/helper"
 	"go.opentelemetry.io/otel"
@@ -46,6 +49,12 @@ func (m *imetrict) GetMetric() (*[]helper.Metric, error) {
 	)
 	otel.SetTracerProvider(tp)
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+
+	defer func() {
+		if err := tp.Shutdown(context.Background()); err != nil {
+			log.Printf("Error shutting down tracer provider: %v", err)
+		}
+	}()
 
 	var metrc helper.Metric
 	copier.Copy(&metrc, tp)
