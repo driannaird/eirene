@@ -153,3 +153,12 @@ type InspectContainer struct {
 	Env          []string                 `json:"env"`
 	Port         map[docker.Port]struct{} `json:"port"`
 }
+
+type HistoryImage struct {
+	ID       string   `json:"id"`
+	Tags     []string `json:"tags"`
+	Created  int64    `json:"created"`
+	CreateBy string   `json:"create_by"`
+	Size     int64    `json:"size"`
+	Comment  string   `json:"comment"`
+}

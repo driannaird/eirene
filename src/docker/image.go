@@ -20,6 +20,7 @@ type DockerImage interface {
 	ListImage() (*[]helper.DockerImage, error)
 	InspectImage(id string) (*helper.InspectDockerImage, error)
 	DeleteImage(id string) error
+	ImageHistory(name string) (*[]helper.HistoryImage, error)
 }
 
 type imageclient struct {
@@ -130,4 +131,34 @@ func (img *imageclient) DeleteImage(id string) error {
 	}
 
 	return nil
+}
+
+func (img *imageclient) ImageHistory(name string) (*[]helper.HistoryImage, error) {
+	span, err := util.TracerWithAttribute(img.trace, "historyImage", name)
+	if err != nil {
+		return nil, helper.InternalServerError(err.Error())
+	}
+
+	defer span.End()
+
+	var response []helper.HistoryImage
+	data, err := img.client.ImageHistory(name)
+	if err != nil {
+		return nil, helper.InternalServerError(err.Error())
+	}
+
+	for _, dt := range data {
+		result := helper.HistoryImage{
+			ID:       dt.ID,
+			Created:  dt.Created,
+			CreateBy: dt.CreatedBy,
+			Comment:  dt.Comment,
+			Size:     dt.Size,
+			Tags:     dt.Tags,
+		}
+
+		response = append(response, result)
+	}
+
+	return &response, nil
 }
