@@ -12,6 +12,11 @@ type DockerEndpoint interface {
 	ImageHistory(ctx *fiber.Ctx) error
 	ListImage(ctx *fiber.Ctx) error
 	InspectImage(ctx *fiber.Ctx) error
+
+	CreateContainer(ctx *fiber.Ctx) error
+	ListContainer(ctx *fiber.Ctx) error
+	DeleteContainer(ctx *fiber.Ctx) error
+	InspectContainer(ctx *fiber.Ctx) error
 }
 
 type dockerendpoint struct {
@@ -82,4 +87,52 @@ func (d *dockerendpoint) InspectImage(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.Status(200).JSON(helper.Success("image found", data))
+}
+
+func (d *dockerendpoint) CreateContainer(ctx *fiber.Ctx) error {
+	var req docker.Container
+	err := ctx.BodyParser(&req)
+	if err != nil {
+		return ctx.Status(500).JSON(helper.InternalServerError(err.Error()))
+	}
+
+	data, err := d.container.Create(req)
+	if err != nil {
+		return ctx.Status(400).JSON(helper.BadRequest(err.Error()))
+	}
+
+	return ctx.Status(200).JSON(helper.Success("success create container", data))
+}
+
+func (d *dockerendpoint) ListContainer(ctx *fiber.Ctx) error {
+	data, err := d.container.ListContainer()
+	if err != nil {
+		return ctx.Status(400).JSON(helper.BadRequest(err.Error()))
+	}
+
+	if data == nil {
+		return ctx.Status(404).JSON(helper.NotFound("you not create container"))
+	}
+
+	return ctx.Status(200).JSON(helper.Success("list all container", data))
+}
+
+func (d *dockerendpoint) InspectContainer(ctx *fiber.Ctx) error {
+	params := ctx.Params("id")
+	data, err := d.container.InspectContainer(params)
+	if err != nil {
+		return ctx.Status(404).JSON(helper.NotFound("container with this id not found"))
+	}
+
+	return ctx.Status(200).JSON(helper.Success("container found", data))
+}
+
+func (d *dockerendpoint) DeleteContainer(ctx *fiber.Ctx) error {
+	params := ctx.Params("id")
+	err := d.container.DeleteContainer(params)
+	if err != nil {
+		return ctx.Status(404).JSON(helper.NotFound("container with this id not found"))
+	}
+
+	return ctx.Status(200).JSON(helper.Success("container successfull deleted", params))
 }
