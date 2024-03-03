@@ -141,3 +141,15 @@ type ListContainer struct {
 	Created int64  `json:"created"`
 	Ports   []Port `json:"ports"`
 }
+
+type InspectContainer struct {
+	ID           string                   `json:"id"`
+	Image        string                   `json:"image"`
+	HostnamePath string                   `json:"hostname_path"`
+	HostsPath    string                   `json:"hosts_path"`
+	Name         string                   `json:"name"`
+	OpenStdin    bool                     `json:"open_stdin"`
+	TTY          bool                     `json:"tty"`
+	Env          []string                 `json:"env"`
+	Port         map[docker.Port]struct{} `json:"port"`
+}

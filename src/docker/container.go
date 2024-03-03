@@ -1,6 +1,8 @@
 package docker
 
 import (
+	"context"
+
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/rulanugrh/eirene/src/helper"
 	"github.com/rulanugrh/eirene/src/internal/util"
@@ -34,6 +36,8 @@ type Container struct {
 type DockerContainer interface {
 	Create(req Container) (*helper.Container, error)
 	ListContainer() (*[]helper.ListContainer, error)
+	InspectContainer(id string) (*helper.InspectContainer, error)
+	DeleteContainer(id string) error
 }
 
 type container struct {
@@ -139,4 +143,54 @@ func (c *container) ListContainer() (*[]helper.ListContainer, error) {
 	}
 
 	return &response, nil
+}
+
+func (c *container) InspectContainer(id string) (*helper.InspectContainer, error) {
+	span, err := util.TracerWithAttribute(c.trace, "inspectContainer", id)
+	if err != nil {
+		return nil, helper.InternalServerError(err.Error())
+	}
+
+	defer span.End()
+
+	data, err := c.client.InspectContainerWithOptions(docker.InspectContainerOptions{
+		ID: id,
+	})
+	if err != nil {
+		return nil, helper.InternalServerError(err.Error())
+	}
+
+	response := helper.InspectContainer{
+		ID:           data.ID,
+		Image:        data.Image,
+		Name:         data.Name,
+		HostnamePath: data.HostnamePath,
+		HostsPath:    data.HostsPath,
+		Port:         data.Config.ExposedPorts,
+		Env:          data.Config.Env,
+		TTY:          data.Config.Tty,
+		OpenStdin:    data.Config.OpenStdin,
+	}
+
+	return &response, nil
+}
+
+func (c *container) DeleteContainer(id string) error {
+	span, err := util.TracerWithAttribute(c.trace, "deleteContainer", id)
+	if err != nil {
+		return helper.InternalServerError(err.Error())
+	}
+
+	defer span.End()
+
+	err = c.client.RemoveContainer(docker.RemoveContainerOptions{
+		ID:      id,
+		Context: context.Background(),
+	})
+
+	if err != nil {
+		return helper.InternalServerError(err.Error())
+	}
+
+	return nil
 }
