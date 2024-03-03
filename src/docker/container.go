@@ -2,6 +2,7 @@ package docker
 
 import (
 	"context"
+	"io"
 
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/rulanugrh/eirene/src/helper"
@@ -38,6 +39,7 @@ type DockerContainer interface {
 	ListContainer() (*[]helper.ListContainer, error)
 	InspectContainer(id string) (*helper.InspectContainer, error)
 	DeleteContainer(id string) error
+	ContainerLog(name string, w io.Writer) error
 }
 
 type container struct {
@@ -186,6 +188,29 @@ func (c *container) DeleteContainer(id string) error {
 	err = c.client.RemoveContainer(docker.RemoveContainerOptions{
 		ID:      id,
 		Context: context.Background(),
+	})
+
+	if err != nil {
+		return helper.InternalServerError(err.Error())
+	}
+
+	return nil
+}
+
+func (c *container) ContainerLog(name string, w io.Writer) error {
+	span, err := util.TracerWithAttribute(c.trace, "containerLog", name)
+	if err != nil {
+		return helper.InternalServerError(err.Error())
+	}
+
+	defer span.End()
+
+	err = c.client.Logs(docker.LogsOptions{
+		Context:      context.Background(),
+		Container:    name,
+		OutputStream: w,
+		Stdout:       true,
+		RawTerminal:  true,
 	})
 
 	if err != nil {
