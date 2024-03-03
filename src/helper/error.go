@@ -32,6 +32,13 @@ func BadRequest(msg string) error {
 	}
 }
 
+func Created(msg string) error {
+	return &Response{
+		Code:    201,
+		Message: msg,
+	}
+}
+
 func NotFound(msg string) error {
 	return &Response{
 		Code:    404,
