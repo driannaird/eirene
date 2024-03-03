@@ -17,6 +17,9 @@ type DockerEndpoint interface {
 	ListContainer(ctx *fiber.Ctx) error
 	DeleteContainer(ctx *fiber.Ctx) error
 	InspectContainer(ctx *fiber.Ctx) error
+	DownloadResourceContainer(ctx *fiber.Ctx) error
+	ContainerLogs(ctx *fiber.Ctx) error
+	PauseContainer(ctx *fiber.Ctx) error
 }
 
 type dockerendpoint struct {
@@ -135,4 +138,34 @@ func (d *dockerendpoint) DeleteContainer(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.Status(200).JSON(helper.Success("container successfull deleted", params))
+}
+
+func (d *dockerendpoint) ContainerLogs(ctx *fiber.Ctx) error {
+	params := ctx.Params("name")
+	err := d.container.ContainerLog(params, ctx.Request().BodyWriter())
+	if err != nil {
+		return ctx.Status(404).JSON(helper.NotFound("container with this id not found"))
+	}
+
+	return ctx.Status(200).JSON(helper.Success("container get logger container with this id", params))
+}
+
+func (d *dockerendpoint) PauseContainer(ctx *fiber.Ctx) error {
+	params := ctx.Params("id")
+	err := d.container.PauseContainer(params)
+	if err != nil {
+		return ctx.Status(404).JSON(helper.NotFound("container with this id not found"))
+	}
+
+	return ctx.Status(200).JSON(helper.Success("container paused", params))
+}
+
+func (d *dockerendpoint) DownloadResourceContainer(ctx *fiber.Ctx) error {
+	params := ctx.Params("id")
+	err := d.container.DownloadResources(params, ctx.Request().BodyWriter())
+	if err != nil {
+		return ctx.Status(404).JSON(helper.NotFound("container with this id not found"))
+	}
+
+	return ctx.Status(200).JSON(helper.Success("success download resources", params))
 }
