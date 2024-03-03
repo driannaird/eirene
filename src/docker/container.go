@@ -3,6 +3,7 @@ package docker
 import (
 	"context"
 	"io"
+	"time"
 
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/rulanugrh/eirene/src/helper"
@@ -40,6 +41,7 @@ type DockerContainer interface {
 	InspectContainer(id string) (*helper.InspectContainer, error)
 	DeleteContainer(id string) error
 	ContainerLog(name string, w io.Writer) error
+	DownloadResources(id string, w io.Writer) error
 }
 
 type container struct {
@@ -211,6 +213,28 @@ func (c *container) ContainerLog(name string, w io.Writer) error {
 		OutputStream: w,
 		Stdout:       true,
 		RawTerminal:  true,
+	})
+
+	if err != nil {
+		return helper.InternalServerError(err.Error())
+	}
+
+	return nil
+}
+
+func (c *container) DownloadResources(id string, w io.Writer) error {
+	span, err := util.TracerWithAttribute(c.trace, "downloadResourceContainer", id)
+	if err != nil {
+		return helper.InternalServerError(err.Error())
+	}
+
+	defer span.End()
+
+	err = c.client.DownloadFromContainer(id, docker.DownloadFromContainerOptions{
+		Path:              "./data/docker/",
+		OutputStream:      w,
+		Context:           context.Background(),
+		InactivityTimeout: time.Duration(1 * time.Minute),
 	})
 
 	if err != nil {
