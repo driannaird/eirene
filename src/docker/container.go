@@ -42,6 +42,7 @@ type DockerContainer interface {
 	DeleteContainer(id string) error
 	ContainerLog(name string, w io.Writer) error
 	DownloadResources(id string, w io.Writer) error
+	PauseContainer(id string) error
 }
 
 type container struct {
@@ -237,6 +238,22 @@ func (c *container) DownloadResources(id string, w io.Writer) error {
 		InactivityTimeout: time.Duration(1 * time.Minute),
 	})
 
+	if err != nil {
+		return helper.InternalServerError(err.Error())
+	}
+
+	return nil
+}
+
+func (c *container) PauseContainer(id string) error {
+	span, err := util.TracerWithAttribute(c.trace, "pauseContainer", id)
+	if err != nil {
+		return helper.InternalServerError(err.Error())
+	}
+
+	defer span.End()
+
+	err = c.client.PauseContainer(id)
 	if err != nil {
 		return helper.InternalServerError(err.Error())
 	}
