@@ -20,17 +20,24 @@ type DockerEndpoint interface {
 	DownloadResourceContainer(ctx *fiber.Ctx) error
 	ContainerLogs(ctx *fiber.Ctx) error
 	PauseContainer(ctx *fiber.Ctx) error
+
+	CreateVolume(ctx *fiber.Ctx) error
+	ListVolume(ctx *fiber.Ctx) error
+	InspectVolume(ctx *fiber.Ctx) error
+	DeleteVolume(ctx *fiber.Ctx) error
 }
 
 type dockerendpoint struct {
 	container docker.DockerContainer
 	image     docker.DockerImage
+	volume    docker.DockerVolume
 }
 
-func NewDockerEndpoint(container docker.DockerContainer, image docker.DockerImage) DockerEndpoint {
+func NewDockerEndpoint(container docker.DockerContainer, image docker.DockerImage, volume docker.DockerVolume) DockerEndpoint {
 	return &dockerendpoint{
 		container: container,
 		image:     image,
+		volume:    volume,
 	}
 }
 
@@ -168,4 +175,55 @@ func (d *dockerendpoint) DownloadResourceContainer(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.Status(200).JSON(helper.Success("success download resources", params))
+}
+
+func (d *dockerendpoint) CreateVolume(ctx *fiber.Ctx) error {
+	var req docker.Volume
+	err := ctx.BodyParser(&req)
+	if err != nil {
+		return ctx.Status(500).JSON(helper.InternalServerError(err.Error()))
+	}
+
+	data, err := d.volume.Create(req)
+	if err != nil {
+		return ctx.Status(400).JSON(helper.BadRequest(err.Error()))
+	}
+
+	return ctx.Status(200).JSON(helper.Success("success create volume", data))
+}
+
+func (d *dockerendpoint) ListVolume(ctx *fiber.Ctx) error {
+	data, err := d.volume.ListVolume()
+	if err != nil {
+		return ctx.Status(400).JSON(helper.BadRequest(err.Error()))
+	}
+
+	if data == nil {
+		return ctx.Status(404).JSON(helper.NotFound("data not found"))
+
+	}
+
+	return ctx.Status(200).JSON(helper.Success("list all volume", data))
+}
+
+func (d *dockerendpoint) InspectVolume(ctx *fiber.Ctx) error {
+	params := ctx.Params("name")
+
+	data, err := d.volume.InspectVolume(params)
+	if err != nil {
+		return ctx.Status(404).JSON(helper.NotFound("volume with this id not found"))
+	}
+
+	return ctx.Status(200).JSON(helper.Success("volume found", data))
+}
+
+func (d *dockerendpoint) DeleteVolume(ctx *fiber.Ctx) error {
+	params := ctx.Params("name")
+
+	err := d.volume.DeleteVolume(params)
+	if err != nil {
+		return ctx.Status(404).JSON(helper.NotFound("volume with this id not found"))
+	}
+
+	return ctx.Status(200).JSON(helper.Success("succesfull deleted volume", params))
 }

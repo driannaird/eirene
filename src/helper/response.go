@@ -162,3 +162,10 @@ type HistoryImage struct {
 	Size     int64    `json:"size"`
 	Comment  string   `json:"comment"`
 }
+
+type Volume struct {
+	Name       string            `json:"name"`
+	Driver     string            `json:"driver"`
+	Labels     map[string]string `json:"label"`
+	DriverOpts map[string]string `json:"driver_ops"`
+}
