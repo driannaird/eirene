@@ -14,6 +14,21 @@ const config: Config = {
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
     },
+    colors: {
+      darkColor: "#35374B",
+      secondDark: "#344955",
+      semiDark: "#50727B",
+      semiLight: "#78A083"
+    },
+    screens: {
+      'sm': '480px',
+      'md': '768px',
+      'lg': '976px',
+      'xl': '1440px'
+    },
+    fontFamily: {
+      jet: "'JetBrains Mono', monospace"
+    }
   },
   plugins: [],
 };
