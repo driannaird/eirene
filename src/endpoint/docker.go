@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/rulanugrh/eirene/src/docker"
 	"github.com/rulanugrh/eirene/src/helper"
+	"github.com/rulanugrh/eirene/src/internal/middleware"
 )
 
 type DockerEndpoint interface {
@@ -42,8 +43,15 @@ func NewDockerEndpoint(container docker.DockerContainer, image docker.DockerImag
 }
 
 func (d *dockerendpoint) PullImage(ctx *fiber.Ctx) error {
+	token := ctx.Get("Authorization")
+	err := middleware.IsAdmin(token)
+
+	if err != nil {
+		return ctx.Status(403).JSON(err.Error())
+	}
+
 	var req docker.Image
-	err := ctx.BodyParser(&req)
+	err = ctx.BodyParser(&req)
 	if err != nil {
 		return ctx.Status(500).JSON(helper.InternalServerError(err.Error()))
 	}
@@ -57,8 +65,15 @@ func (d *dockerendpoint) PullImage(ctx *fiber.Ctx) error {
 }
 
 func (d *dockerendpoint) DeleteImage(ctx *fiber.Ctx) error {
+	token := ctx.Get("Authorization")
+	err := middleware.IsAdmin(token)
+
+	if err != nil {
+		return ctx.Status(403).JSON(err.Error())
+	}
+
 	param := ctx.Params("id")
-	err := d.image.DeleteImage(param)
+	err = d.image.DeleteImage(param)
 	if err != nil {
 		return ctx.Status(400).JSON(helper.BadRequest(err.Error()))
 	}
@@ -67,6 +82,13 @@ func (d *dockerendpoint) DeleteImage(ctx *fiber.Ctx) error {
 }
 
 func (d *dockerendpoint) ImageHistory(ctx *fiber.Ctx) error {
+	token := ctx.Get("Authorization")
+	err := middleware.IsAdmin(token)
+
+	if err != nil {
+		return ctx.Status(403).JSON(err.Error())
+	}
+
 	param := ctx.Params("name")
 	data, err := d.image.ImageHistory(param)
 	if err != nil {
@@ -77,6 +99,13 @@ func (d *dockerendpoint) ImageHistory(ctx *fiber.Ctx) error {
 }
 
 func (d *dockerendpoint) ListImage(ctx *fiber.Ctx) error {
+	token := ctx.Get("Authorization")
+	err := middleware.IsAdmin(token)
+
+	if err != nil {
+		return ctx.Status(403).JSON(err.Error())
+	}
+
 	data, err := d.image.ListImage()
 	if err != nil {
 		return ctx.Status(400).JSON(helper.BadRequest(err.Error()))
@@ -90,6 +119,13 @@ func (d *dockerendpoint) ListImage(ctx *fiber.Ctx) error {
 }
 
 func (d *dockerendpoint) InspectImage(ctx *fiber.Ctx) error {
+	token := ctx.Get("Authorization")
+	err := middleware.IsAdmin(token)
+
+	if err != nil {
+		return ctx.Status(403).JSON(err.Error())
+	}
+
 	param := ctx.Params("id")
 	data, err := d.image.InspectImage(param)
 	if err != nil {
@@ -100,8 +136,15 @@ func (d *dockerendpoint) InspectImage(ctx *fiber.Ctx) error {
 }
 
 func (d *dockerendpoint) CreateContainer(ctx *fiber.Ctx) error {
+	token := ctx.Get("Authorization")
+	err := middleware.IsAdmin(token)
+
+	if err != nil {
+		return ctx.Status(403).JSON(err.Error())
+	}
+
 	var req docker.Container
-	err := ctx.BodyParser(&req)
+	err = ctx.BodyParser(&req)
 	if err != nil {
 		return ctx.Status(500).JSON(helper.InternalServerError(err.Error()))
 	}
@@ -115,6 +158,13 @@ func (d *dockerendpoint) CreateContainer(ctx *fiber.Ctx) error {
 }
 
 func (d *dockerendpoint) ListContainer(ctx *fiber.Ctx) error {
+	token := ctx.Get("Authorization")
+	err := middleware.IsAdmin(token)
+
+	if err != nil {
+		return ctx.Status(403).JSON(err.Error())
+	}
+
 	data, err := d.container.ListContainer()
 	if err != nil {
 		return ctx.Status(400).JSON(helper.BadRequest(err.Error()))
@@ -128,6 +178,13 @@ func (d *dockerendpoint) ListContainer(ctx *fiber.Ctx) error {
 }
 
 func (d *dockerendpoint) InspectContainer(ctx *fiber.Ctx) error {
+	token := ctx.Get("Authorization")
+	err := middleware.IsAdmin(token)
+
+	if err != nil {
+		return ctx.Status(403).JSON(err.Error())
+	}
+
 	params := ctx.Params("id")
 	data, err := d.container.InspectContainer(params)
 	if err != nil {
@@ -138,8 +195,15 @@ func (d *dockerendpoint) InspectContainer(ctx *fiber.Ctx) error {
 }
 
 func (d *dockerendpoint) DeleteContainer(ctx *fiber.Ctx) error {
+	token := ctx.Get("Authorization")
+	err := middleware.IsAdmin(token)
+
+	if err != nil {
+		return ctx.Status(403).JSON(err.Error())
+	}
+
 	params := ctx.Params("id")
-	err := d.container.DeleteContainer(params)
+	err = d.container.DeleteContainer(params)
 	if err != nil {
 		return ctx.Status(404).JSON(helper.NotFound("container with this id not found"))
 	}
@@ -148,8 +212,15 @@ func (d *dockerendpoint) DeleteContainer(ctx *fiber.Ctx) error {
 }
 
 func (d *dockerendpoint) ContainerLogs(ctx *fiber.Ctx) error {
+	token := ctx.Get("Authorization")
+	err := middleware.IsAdmin(token)
+
+	if err != nil {
+		return ctx.Status(403).JSON(err.Error())
+	}
+
 	params := ctx.Params("name")
-	err := d.container.ContainerLog(params, ctx.Request().BodyWriter())
+	err = d.container.ContainerLog(params, ctx.Request().BodyWriter())
 	if err != nil {
 		return ctx.Status(404).JSON(helper.NotFound("container with this id not found"))
 	}
@@ -158,8 +229,15 @@ func (d *dockerendpoint) ContainerLogs(ctx *fiber.Ctx) error {
 }
 
 func (d *dockerendpoint) PauseContainer(ctx *fiber.Ctx) error {
+	token := ctx.Get("Authorization")
+	err := middleware.IsAdmin(token)
+
+	if err != nil {
+		return ctx.Status(403).JSON(err.Error())
+	}
+
 	params := ctx.Params("id")
-	err := d.container.PauseContainer(params)
+	err = d.container.PauseContainer(params)
 	if err != nil {
 		return ctx.Status(404).JSON(helper.NotFound("container with this id not found"))
 	}
@@ -168,8 +246,15 @@ func (d *dockerendpoint) PauseContainer(ctx *fiber.Ctx) error {
 }
 
 func (d *dockerendpoint) DownloadResourceContainer(ctx *fiber.Ctx) error {
+	token := ctx.Get("Authorization")
+	err := middleware.IsAdmin(token)
+
+	if err != nil {
+		return ctx.Status(403).JSON(err.Error())
+	}
+
 	params := ctx.Params("id")
-	err := d.container.DownloadResources(params, ctx.Request().BodyWriter())
+	err = d.container.DownloadResources(params, ctx.Request().BodyWriter())
 	if err != nil {
 		return ctx.Status(404).JSON(helper.NotFound("container with this id not found"))
 	}
@@ -178,8 +263,15 @@ func (d *dockerendpoint) DownloadResourceContainer(ctx *fiber.Ctx) error {
 }
 
 func (d *dockerendpoint) CreateVolume(ctx *fiber.Ctx) error {
+	token := ctx.Get("Authorization")
+	err := middleware.IsAdmin(token)
+
+	if err != nil {
+		return ctx.Status(403).JSON(err.Error())
+	}
+
 	var req docker.Volume
-	err := ctx.BodyParser(&req)
+	err = ctx.BodyParser(&req)
 	if err != nil {
 		return ctx.Status(500).JSON(helper.InternalServerError(err.Error()))
 	}
@@ -193,6 +285,13 @@ func (d *dockerendpoint) CreateVolume(ctx *fiber.Ctx) error {
 }
 
 func (d *dockerendpoint) ListVolume(ctx *fiber.Ctx) error {
+	token := ctx.Get("Authorization")
+	err := middleware.IsAdmin(token)
+
+	if err != nil {
+		return ctx.Status(403).JSON(err.Error())
+	}
+
 	data, err := d.volume.ListVolume()
 	if err != nil {
 		return ctx.Status(400).JSON(helper.BadRequest(err.Error()))
@@ -207,6 +306,13 @@ func (d *dockerendpoint) ListVolume(ctx *fiber.Ctx) error {
 }
 
 func (d *dockerendpoint) InspectVolume(ctx *fiber.Ctx) error {
+	token := ctx.Get("Authorization")
+	err := middleware.IsAdmin(token)
+
+	if err != nil {
+		return ctx.Status(403).JSON(err.Error())
+	}
+
 	params := ctx.Params("name")
 
 	data, err := d.volume.InspectVolume(params)
@@ -218,9 +324,16 @@ func (d *dockerendpoint) InspectVolume(ctx *fiber.Ctx) error {
 }
 
 func (d *dockerendpoint) DeleteVolume(ctx *fiber.Ctx) error {
+	token := ctx.Get("Authorization")
+	err := middleware.IsAdmin(token)
+
+	if err != nil {
+		return ctx.Status(403).JSON(err.Error())
+	}
+
 	params := ctx.Params("name")
 
-	err := d.volume.DeleteVolume(params)
+	err = d.volume.DeleteVolume(params)
 	if err != nil {
 		return ctx.Status(404).JSON(helper.NotFound("volume with this id not found"))
 	}

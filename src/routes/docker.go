@@ -3,10 +3,12 @@ package routes
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/rulanugrh/eirene/src/endpoint"
+	"github.com/rulanugrh/eirene/src/internal/middleware"
 )
 
 func DockerRoutes(f *fiber.App, endpoint endpoint.DockerEndpoint) {
 	ctn := f.Group("/api/v1/docker/container")
+	ctn.Use(middleware.JWTVerify())
 	ctn.Post("/create", endpoint.CreateContainer)
 	ctn.Get("/getAll", endpoint.ListContainer)
 	ctn.Get("/get/:id", endpoint.InspectContainer)
@@ -16,6 +18,7 @@ func DockerRoutes(f *fiber.App, endpoint endpoint.DockerEndpoint) {
 	ctn.Delete("/delete/:id", endpoint.DeleteContainer)
 
 	img := f.Group("/api/v1/docker/image")
+	img.Use(middleware.JWTVerify())
 	img.Post("/pull", endpoint.PullImage)
 	img.Get("/getAll", endpoint.ListImage)
 	img.Get("/get/:id", endpoint.InspectImage)
@@ -23,6 +26,7 @@ func DockerRoutes(f *fiber.App, endpoint endpoint.DockerEndpoint) {
 	img.Get("/history/:name", endpoint.ImageHistory)
 
 	vlm := f.Group("/api/v1/docker/volume")
+	vlm.Use(middleware.JWTVerify())
 	vlm.Post("/create", endpoint.CreateVolume)
 	vlm.Get("/getAll", endpoint.ListVolume)
 	vlm.Get("/get/:id", endpoint.InspectVolume)
