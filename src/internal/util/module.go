@@ -28,13 +28,13 @@ func (m *mod) InstallDepedency(req entity.Module) (*helper.ResponseModule, error
 	os := check_os(req.OS)
 	switch os {
 	case "ubuntu":
-		response := install_package(req, "/bin/apt install")
+		response := install_package(req, "apt")
 		return response, nil
 	case "debian":
-		response := install_package(req, "/bin/apt install")
+		response := install_package(req, "apt")
 		return response, nil
 	case "centos":
-		response := install_package(req, "/bin/yum install")
+		response := install_package(req, "dnf")
 		return response, nil
 	default:
 		return nil, helper.BadRequest("Sorry your os not support")
@@ -45,13 +45,13 @@ func (m *mod) DeleteDepedency(req entity.Module) (*helper.ResponseModule, error)
 	os := check_os(req.OS)
 	switch os {
 	case "ubuntu":
-		response := install_package(req, "/bin/apt purge")
+		response := purge_package(req, "apt")
 		return response, nil
 	case "debian":
-		response := install_package(req, "/bin/apt purge")
+		response := purge_package(req, "apt")
 		return response, nil
 	case "centos":
-		response := install_package(req, "/bin/yum purge")
+		response := purge_package(req, "dnf")
 		return response, nil
 	default:
 		return nil, helper.BadRequest("Sorry your os not support")
@@ -62,13 +62,13 @@ func (m *mod) UpdatePackage(req entity.Module) error {
 	os := check_os(req.OS)
 	switch os {
 	case "ubuntu":
-		err := run_exec("/bin/apt")
+		err := run_exec("apt")
 		return err
 	case "debian":
-		err := run_exec("/bin/apt")
+		err := run_exec("apt")
 		return err
 	case "centos":
-		err := run_exec("/bin/yum")
+		err := run_exec("dnf")
 		return err
 	default:
 		return helper.BadRequest("Sorry your os not support")
@@ -92,12 +92,14 @@ func (m *mod) AddSSHKey(req entity.SSHKey) error {
 }
 
 func install_package(req entity.Module, command string) *helper.ResponseModule {
-	err := exec.Command(command, req.Package...).Err
-	if err != nil {
-		log.Printf("Something error when install package :%s", err.Error())
-		return &helper.ResponseModule{
-			Package: nil,
-			Message: "sorry package not installed",
+	for _, dt := range req.Package {
+		err := exec.Command("/bin/sudo", command, "install", dt).Err
+		if err != nil {
+			log.Printf("Something error when install package :%s", err.Error())
+			return &helper.ResponseModule{
+				Package: nil,
+				Message: "sorry package not installed",
+			}
 		}
 	}
 
@@ -107,8 +109,26 @@ func install_package(req entity.Module, command string) *helper.ResponseModule {
 	}
 }
 
+func purge_package(req entity.Module, command string) *helper.ResponseModule {
+	for _, dt := range req.Package {
+		err := exec.Command("/bin/sudo", command, "purge", dt).Err
+		if err != nil {
+			log.Printf("Something error when purgge package :%s", err.Error())
+			return &helper.ResponseModule{
+				Package: nil,
+				Message: "sorry package not purge",
+			}
+		}
+	}
+
+	return &helper.ResponseModule{
+		Package: req.Package,
+		Message: "Package success purge",
+	}
+}
+
 func run_exec(command string) error {
-	err := exec.Command(command, "update").Err
+	err := exec.Command("/bin/sudo", command, "update").Err
 	if err != nil {
 		return helper.BadRequest("Sorry yu cant running this command")
 	}
